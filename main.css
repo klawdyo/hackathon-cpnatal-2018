@@ -59,7 +59,12 @@ div.buttons button {
     height: 17px;
 }
 
+    .input-group input[type="color"]:disabled {
+        opacity: 0.4;
+    }
+
 #depth{
     margin-bottom: 1rem;
     width: 15rem;
 }
+
