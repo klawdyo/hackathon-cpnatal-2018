@@ -1,0 +1,28 @@
+body {
+    
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    width: 1040px;
+    margin: 0 auto;
+}
+
+main form {
+    display: flex;
+}
+
+.input-group {
+
+}
+
+.input-group input {
+    padding: .5rem;
+}
+
+main aside iframe {
+    width: 640px;
+    height: 640px;
+    border: none;
+}
