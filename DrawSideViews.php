@@ -2,7 +2,7 @@
 ob_end_clean();
 require 'Draw.php';
 class DrawSideViews extends Draw{
-    /*
+/*
       @var
       Fonte padrão, relativo a /public/fonts
      */

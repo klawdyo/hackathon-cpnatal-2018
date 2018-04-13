@@ -10,19 +10,56 @@ main {
 }
 
 main form {
-    display: flex;
-}
-
-.input-group {
-
-}
-
-.input-group input {
-    padding: .5rem;
 }
 
 main aside iframe {
     width: 640px;
     height: 640px;
     border: none;
+}
+
+section.form-data {
+    display: flex;
+    margin-bottom: .5rem;
+    
+}
+
+section.form-data button {
+    cursor: pointer;
+    margin-left: .5rem;
+}
+
+div.buttons {
+    margin-top: .5rem;
+}
+
+div.buttons button {
+    padding: .5rem;
+    margin-left: .5rem;
+    cursor: pointer;
+}
+
+.input-group {
+    /* display: inline-block; */
+    /* width: calc((100% - 100px) / 5); */
+    margin: 0 .5rem;
+}
+
+.input-group input,
+.input-group select {
+    width: calc(100% - 1rem);
+    padding: .5rem;
+}
+
+.input-group select {
+    width: 100%;
+}
+
+.input-group input[type="color"]{
+    height: 17px;
+}
+
+#depth{
+    margin-bottom: 1rem;
+    width: 15rem;
 }

@@ -9,10 +9,11 @@
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <main>
-        <form method="post" action="example1.php" target="iframe">
+    <script type="text/template" id="new-form">
+        <section id="form-data-${index}" class="form-data">
+            <input type="hidden" name="field[${index}][id]" id="current-id">
             <div class="input-group">
-                <select name="field[0][type]" id="type">
+                <select name="field[${index}][type]" id="type-${index}" onchange="enableFields(${index})">
                     <option value="coating">Revestimento</option>
                     <option value="diameter">Diâmetro (pol)</option>
                     <option value="filter">Filtro (mm)</option>
@@ -21,28 +22,43 @@
                 </select>
             </div>
             <div class="input-group">
-                <input type="text" name="field[0][material_name]" id="material-name" placeholder="Material">
+                <input type="text" name="field[${index}][material_name]" id="material-name-${index}" placeholder="Material">
             </div>
             <div class="input-group">
-                <input type="text" name="field[0][m_initial]" id="initial-footage" placeholder="Metragem inicial">
+                <input type="color" name="field[${index}][background_color]" id="background-color-${index}" placeholder="Cor">
+            </div>
+            <div class="input-group">
+                <input type="text" name="field[${index}][m_initial]" id="initial-footage-${index}" placeholder="Metragem inicial">
             </div>            
             <div class="input-group">
-                <input type="text" name="field[0][m_final]" id="end-footage" placeholder="Metragem final">
+                <input type="text" name="field[${index}][m_final]" id="end-footage-${index}" placeholder="Metragem final">
             </div>
             <div class="input-group">
-                <input type="text" name="field[0][diameter]" id="diameter" placeholder="Diâmetro (pol)">
+                <input type="text" name="field[${index}][diameter]" id="diameter-${index}" placeholder="Diâmetro (pol)">
             </div>
             <div class="input-group">
-                <input type="text" name="field[0][slot]" id="slot" placeholder="Ranhura (mm)">
+                <input type="text" name="field[${index}][slot]" id="slot-${index}" placeholder="Ranhura (mm)">
             </div>
-            <button type="submit">Enviar</button>
-        </form>
+            <button type="button" onclick="removeItem(${index})">X</button>
+        </section>
+    </script>
+    <main>
         <aside>
             <iframe name="iframe" src="example1.php"></iframe>
-            <!-- <img src="example1.php" alt=""> -->
         </aside>
+    
+        <form id="form" method="post" action="example1.php" target="iframe">
+            <div class="depth input-group">
+                <input type="text" name="depth" id="depth" placeholder="Profundidade do Poço (m)">
+            </div>
+            <div class="buttons">
+                <button type="button" id="add-new">Adicionar</button>
+                <button type="submit">Enviar</button>
+            </div>
+        </form>
     </main>
 
-    <script typesrc="main.js">
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
