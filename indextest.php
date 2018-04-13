@@ -43,6 +43,12 @@
         </section>
     </script>
     <main>
+        <form id="form" method="post" action="example1.php" target="iframe">
+            <div class="buttons">
+                <button type="button" id="add-new">Adicionar</button>
+                <button type="submit">Enviar</button>
+            </div>
+        </form>
         <aside>
             <iframe name="iframe" src="example1.php"></iframe>
         </aside>
