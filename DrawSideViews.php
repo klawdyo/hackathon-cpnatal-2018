@@ -129,7 +129,7 @@ class DrawSideViews extends Draw{
     public $horizontalMargin      = 30;                     // margin esquerda e direita.
 
     public $topLabelsHeight       = 75;                     // altura em pixels das legendas superiores
-    public $availableHeight       = 450;                    // altura disponível para manejar os perfis
+    public $availableHeight       = 1050;                    // altura disponível para manejar os perfis
     public $columnWidth           = 20;                     // Largura de cada coluna no desenho
     public $columnSpacement       = 5;                      // Espaçamento entre colunas
     public $slotLabelsWidth       = 130;                    // Espaço sufiente para desenhar a legenda das ranhuras dos filtros
@@ -150,7 +150,7 @@ class DrawSideViews extends Draw{
     public $filterWidth         = 15;
     public $coatingWidth        = 15;
     public $diameterWidth       = 15;
-    public $lythologicWidth     = 80;
+    public $lythologicWidth     = 150;
     public $complementaryWidth  = 15;
     
     //Cores das legendas superiores
