@@ -1,5 +1,6 @@
 <?php
 require 'Utils.php';
+require 'Filesystem.php';
 
 class Draw{
 
@@ -164,6 +165,53 @@ class Draw{
         return $this;
     }
 
+
+
+    /**
+     * Cria uma imagem colorida de dimensões específicas e aplica uma segunda imagem como 
+     * ladrilho para elas
+     */
+    public function tiles(  $w, $h, $path, $backgroundColor ){
+        // Imagem vazia com uma cor de fundo
+        $im = ( new Draw( $w, $h, $backgroundColor ) )->img;
+    
+        // $stamp = imagecreatefromxxx('./tiles/claudio.jpeg');
+        $stamp = $this->createFromXxx( $path );
+    
+        // Dimensões da imagem de background
+        $bgWidth    = imagesx($im);
+        $bgHeight   = imagesy($im);
+        // Dimensões do ladrilho
+        $tileWidth  = imagesx($stamp);
+        $tileHeight = imagesy($stamp);
+        // Linhas e Colunas a serem repetidas
+        $cols = $bgWidth  > $tileWidth  ? ceil( $bgWidth / $tileWidth )   : 1;
+        $rows = $bgHeight > $tileHeight ? ceil( $bgHeight / $tileHeight ) : 1;
+        // Loop pelas linhas e colunas
+        for( $i = 0; $i < $cols; $i++ ){
+            for( $j = 0;$j < $rows; $j++ ){
+                $this->imageMerge( $im, $stamp, $i * $tileWidth, $j * $tileHeight, 0,0, imagesx($stamp), imagesy($stamp), 100 );
+            }
+        }
+        
+        return $im;
+        //header('Content-type: image/png');
+        //imagepng($im);
+        //imagedestroy($im);
+    }    
+
+    /**
+     * Usa as tiles() para adicionar uma textura a um retângulo
+     */
+    public function addTexture( $x, $y, $w, $h, $path, $bgColor ){
+        //imag  
+        $texture = $this->tiles( $w, $h, $path, $bgColor );
+        $this->imageMerge( $this->img, $texture, $x, $y, 0,0,imagesx( $texture ), imagesy($texture), 100 );
+
+        return $this;
+    }
+    
+
     ##########################################################################################
     ##
     ##  MÉTODOS DE RETORNO
@@ -238,6 +286,21 @@ class Draw{
         imageSaveAlpha($this->img, true);
     }
 
+    /**
+     * Cria uma imagem a partir de outra de extensões jpg e png
+     */
+    function createFromXxx( $path ) {
+        $extension = Filesystem::extension($path);
+        switch( $extension ){
+            case 'png'  : return imagecreatefrompng ( $path ); break;
+            case 'jpeg' : return imagecreatefromjpeg( $path ); break;
+            case 'jpg'  : return imagecreatefromjpeg( $path ); break;
+        }
+    }
+
+    
+        
+
     /*
      * Pega uma cor alocada
      */
@@ -257,6 +320,24 @@ class Draw{
         $color = $this->toRGB($hex);
         $this->allocatedColors[$hex] = imagecolorallocate($this->img, $color->red, $color->green, $color->blue);
     }
+
+    /**
+     * Adaptação do imagecopymerge() com suporte a imagens transparentes
+     */
+    function imageMerge($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h, $pct){ 
+        // creating a cut resource 
+        $cut = imagecreatetruecolor($src_w, $src_h);
+    
+        // copying relevant section from background to the cut resource 
+        imagecopy($cut, $dst_im, 0, 0, $dst_x, $dst_y, $src_w, $src_h); 
+        
+        // copying relevant section from watermark to the cut resource 
+        imagecopy($cut, $src_im, 0, 0, $src_x, $src_y, $src_w, $src_h); 
+        
+        // insert cut resource to destination image 
+        imagecopymerge($dst_im, $cut, $dst_x, $dst_y, 0, 0, $src_w, $src_h, $pct); 
+    } 
+
 
     /*
      * Converte uma cor em hexadecimal em suas componentes rgb

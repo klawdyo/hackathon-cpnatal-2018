@@ -29,17 +29,20 @@
     const diameter = document.querySelector( `#diameter-${id}` );
     const materialName = document.querySelector( `#material-name-${id}` );
     const backgroundColor = document.querySelector( `#background-color-${id}` );
+    const image = document.querySelector( `#image-${id}` );
 
     slot.setAttribute( 'disabled', true );
     diameter.setAttribute( 'disabled', true );
     materialName.setAttribute('disabled', true);
     backgroundColor.setAttribute('disabled', true);
+    image.setAttribute('disabled', true);
 
     switch( value ){
         case 'filter': 
             backgroundColor.removeAttribute('disabled');
             materialName.removeAttribute('disabled');
             slot.removeAttribute('disabled');
+            image.removeAttribute('disabled');
         break;
         case 'diameter': 
             diameter.removeAttribute('disabled');
@@ -48,6 +51,7 @@
         case 'lythologic':
         case 'complementary':
             backgroundColor.removeAttribute('disabled');
+            image.removeAttribute('disabled');
             materialName.removeAttribute('disabled');
         break;
     }

@@ -64,7 +64,9 @@ class DrawSideViews extends Draw{
 
     /*
      * setData
-     * Define os dados
+     * Alimenta a propriedade da altura máxima
+     * - Caso $maxHeight esteja vazia, calcula seu valor baseando-se nas informações dos perfis
+     * - Caso a profundidade do poço não tenha sido informada, usa o valor de $maxHeight
      */
     public function setMaxHeight( $maxHeight = null ){
 
@@ -77,11 +79,18 @@ class DrawSideViews extends Draw{
             foreach( $this->data as $data ){
                 if( $data['m_final'] > $maxHeight ) $maxHeight = $data['m_final'];
             }
+
+            $this->maxHeight = $maxHeight;
         }
 
-        
+        // Caso não tenha sido definido uma profundidade do poço
+        if( empty( $this->depth ) ) $this->depth = $this->maxHeight;
     }
 
+
+    /**
+     * Converte um número para o formato PT-BR com 2 casas para exibição das legendas.
+     */
     public function numBR( $n ){
         return number_format( $n, 2, ',','' );
     }
@@ -100,47 +109,65 @@ class DrawSideViews extends Draw{
      * @param $maxHeight É a maior profundidade do poço.
      */
     public function setRatio(){
-        if( empty( $this->depth ) ) $this->depth = 0;
+        if( empty( $this->depth ) )     $this->depth = 0;
         if( empty( $this->maxHeight ) ) $this->maxHeight = 0;
+        
         //Se profundidade for maior, pegue-a. Senão, pegue maxHeight que é o maior profundidade dos perfis
         $this->maxDepth = $this->depth > $this->maxHeight ? $this->depth : $this->maxHeight;
-
+        //Defina 1 caso maxDepth não esteja definido
         $this->maxDepth = empty( $this->maxDepth ) ? 1 : $this->maxDepth;
 
-        //
-        //$this->text('Depth:' . $this->maxDepth, 50, 10, '000000', 10);
         return $this->ratio = $this->availableHeight / $this->maxDepth;
     }
 
 
 
+    public $tileWater             = './tiles/water.png';    // Path da água
+    public $colorWater            = 'CCCCFF';               // Cor da água em hexadecimal sem o '#'
 
+    public $verticalMargin        = 30;                     // margem superior e inferior
+    public $horizontalMargin      = 30;                     // margin esquerda e direita.
 
-    public $verticalMargin        = 30;       // margem superior e inferior
-    public $horizontalMargin      = 30;       // margin esquerda e direita.
+    public $topLabelsHeight       = 75;                     // altura em pixels das legendas superiores
+    public $availableHeight       = 450;                    // altura disponível para manejar os perfis
+    public $columnWidth           = 20;                     // Largura de cada coluna no desenho
+    public $columnSpacement       = 5;                      // Espaçamento entre colunas
+    public $slotLabelsWidth       = 130;                    // Espaço sufiente para desenhar a legenda das ranhuras dos filtros
 
-    public $topLabelsHeight       = 75;       // altura em pixels das legendas superiores
-    public $availableHeight       = 450;      // altura disponível para manejar os perfis
-    public $columnWidth           = 20;       // Largura de cada coluna no desenho
-    public $slotLabelsWidth       = 130;      // Espaço sufiente para desenhar a legenda das ranhuras dos filtros
+    public $waterWidth;                                     // Largura do canal em pixels. Calculada por drawWater()
+    public $topFilterLabelX;                                // X inicial da legenda superior do filtro. Calculada por drawFilter()
+    
+    // public $xStartCoating;                                  // X do início do revestimento
+    // public $widthCoating;                                   // Largura do revestimento
+    // public $columnWidthCoating    = 15;                     // Largura da coluna do revestimento
+    // Início das colunas
+    public $filterX;
+    public $coatingX;
+    public $diameterX;
+    public $lythologicX;
+    public $complementaryX;
+    // Largura das colunas
+    public $filterWidth         = 15;
+    public $coatingWidth        = 15;
+    public $diameterWidth       = 15;
+    public $lythologicWidth     = 80;
+    public $complementaryWidth  = 15;
+    
+    //Cores das legendas superiores
+    public $topFilterColor        = 'AAAAAA';               // Cor usada para exibir a legenda superior do filtro.
+    public $topCoatingColor       = '0059B2';               // Cor usada para exibir a legenda superior
+    public $topComplementaryColor = '006600';               // Cor usada para exibir a legenda superior
+    public $topLythologicColor    = 'B20000';               // Cor usada para exibir a legenda superior
+    
+    // public $xStartComplementary;                            // X do início do revestimento
+    // public $widthComplementary          = 15;               // Largura do revestimento
+    // public $columnWidthComplementary    = 15;               // Largura da coluna do complemento
 
-    public $waterWidth;                       // Largura do canal em pixels. Calculada por drawWater()
-    public $topFilterLabelX;                  // X inicial da legenda superior do filtro. Calculada por drawFilter()
-    public $topFilterColor        = 'AAAAAA'; // Cor usada para exibir a legenda superior do filtro.
+    // public $xStartLythologic;                               // X do início do revestimento
+    // public $widthLythologic;                                // Largura do revestimento
+    // public $columnWidthLythologic = 100;                    // Largura da 
 
-    public $xStartCoating;                    // X do início do revestimento
-    public $widthCoating;                     // Largura do revestimento
-    public $topCoatingColor       = '0059B2'; // Cor usada para exibir a legenda superior
-
-    public $xStartComplementary;              // X do início do revestimento
-    public $widthComplementary;               // Largura do revestimento
-    public $topComplementaryColor = '006600'; // Cor usada para exibir a legenda superior
-
-    public $xStartLythologic;                 // X do início do revestimento
-    public $widthLythologic;                  // Largura do revestimento
-    public $topLythologicColor    = 'B20000'; // Cor usada para exibir a legenda superior
-
-    public $xStartDiameter;                   // X do início do diâmetro
+    // public $xStartDiameter;                                 // X do início do diâmetro
 
     /*      [id] => 57
             [side_views_types_id] => 57
@@ -153,16 +180,16 @@ class DrawSideViews extends Draw{
             [optic_data] =>
             [geophisics_file] =>
             [type] => coating
-            [type_name] => Perfil Construtivo do Revestimento
-            [col_num] => 1
             [background_color] = FFACCA
+            [image] = 'tiles/water.png'
             [material_name] = Filtro PVC
         )
     */
 
     public function drawDiameter(){
         //X do início do revestimento
-        $this->xStartDiameter = $this->columnWidth + $this->xStartLythologic + $this->widthLythologic + 50;
+        //$this->xStartDiameter = $this->columnWidth + $this->xStartLythologic + $this->widthLythologic + 50;
+        $this->diameterX = $this->lythologicX + $this->lythologicWidth + 50;
 
         //Pega só o que for revestimento e elimina os vazios
          $data = $this->getByType( 'diameter' );
@@ -177,7 +204,7 @@ class DrawSideViews extends Draw{
 
             //$yIni = $y + $this->ratio * $row['m_initial'];
             $yEnd = $y + $this->ratio * $row[ 'm_final' ];
-            $x = $this->xStartDiameter + $this->columnWidth;
+            $x = $this->diameterX;
             //Legenda
                 $this->line( $x, $yIni, 20, 0, '000000' )
                      ->line( $x, $yEnd, 20, 0, '000000' )
@@ -195,15 +222,14 @@ class DrawSideViews extends Draw{
         $this->line($x, $y - 20, $this->availableHeight + 20, 270, '000000')
              ->text("Diâmetro da\nPerfuração", $x, $y - 20, '000000', 8 , 45 )
              ;
-
-
-
     }
+
 
 
     public function drawLythologic(){
         //X do início do revestimento
-        $this->xStartLythologic = $this->columnWidth + $this->xStartComplementary + $this->widthComplementary;
+        //$this->xStartLythologic = $this->columnSpacement + $this->complementaryX + $this->complementaryWidth;
+        $this->lythologicX = $this->columnSpacement + $this->complementaryX + $this->complementaryWidth;
 
         //Pega só o que for revestimento e elimina os vazios
          $data = $this->getByType( 'lythologic' );
@@ -217,43 +243,46 @@ class DrawSideViews extends Draw{
          foreach( $data as $row ){  if( $row['col_num'] > $columnsNumber ) $columnsNumber = $row['col_num'];  }
 
          //Largura da Litologia
-         $this->widthLythologic = $this->columnWidth * $columnsNumber;
-
+         //$this->widthLythologic = $this->columnWidthLythologic;
+         
          //Loop pelas linhas
          foreach( $data as $row ){
              //Adiciona o canal às legendas inferiores
-             $this->addMaterial( $row['material_name'], $row['background_color'] );
+             $this->addMaterial( $row['material_name'], $row['background_color'], $row['image'] );
 
              //Calcula os posicionamentos do retângulo
-             $x = $this->xStartLythologic + ( $row[ 'col_num'   ] * $this->columnWidth );
+             $x = $this->lythologicX;// + ( $row[ 'col_num'   ] * $this->columnWidthLythologic );
              $y = $this->verticalMargin   + $this->topLabelsHeight + ( $row[ 'm_initial' ] * $this->ratio );
-             $w = $this->columnWidth;
+             $w = $this->lythologicWidth;
              $h =  ( $row[ 'm_final' ] - $row[ 'm_initial' ] ) * $this->ratio;
 
-             $this->rectangle( $x, $y, $w, $h, $row['background_color'] );
+             if( isset($row['image']) ) $this->addTexture( $x, $y, $w, $h, $row['image'], $row['background_color'] );
+             else $this->rectangle( $x, $y, $w, $h, $row['background_color'] );
+             //$this->tiles();
          }
 
          //Desenha o label superior do revestimento
          $topLythologicLabelY       = $this->verticalMargin + $this->topLabelsHeight;
 
          $this//linhas verticais inferiores
-              ->line( $this->xStartLythologic + $this->columnWidth, $topLythologicLabelY, 10, 90, $this->topLythologicColor )
-              ->line( $this->xStartLythologic + $this->columnWidth + ( $this->columnWidth * $columnsNumber ), $topLythologicLabelY, 10, 90, $this->topLythologicColor )
+              ->line( $x, $topLythologicLabelY, 10, 90, $this->topLythologicColor )
+              ->line( $x + $this->lythologicWidth, $topLythologicLabelY, 10, 90, $this->topLythologicColor )
               //linha horizontal
-              ->line( $this->xStartLythologic + $this->columnWidth, $topLythologicLabelY - 10, $this->columnWidth * $columnsNumber, 0, $this->topLythologicColor )
+              ->line( $x, $topLythologicLabelY - 10, $this->lythologicWidth, 0, $this->topLythologicColor )
          ;
 
          //posicionamento da linha e do texto da legenda superior
-         $centerX =   $this->columnWidth+( $this->columnWidth * $columnsNumber ) / 2;
-         $this->line( $this->xStartLythologic + $centerX, $topLythologicLabelY - 10, 10, 90, $this->topLythologicColor )
-              ->text( 'Litologia',  $this->xStartLythologic + $centerX, $topLythologicLabelY - 20, $this->topLythologicColor, 8, 45)
+         $centerX =   $x + ( $this->lythologicWidth  / 2);
+         $this->line( $centerX, $topLythologicLabelY - 10, 10, 90, $this->topLythologicColor )
+              ->text( 'Litologia',  $centerX, $topLythologicLabelY - 20, $this->topLythologicColor, 8, 45)
          ;
     }
 
 
     public function drawComplementary(){
         //X do início do revestimento
-        $this->xStartComplementary = $this->columnWidth + $this->xStartCoating + $this->widthCoating;
+        $this->xStartComplementary = $this->columnSpacement + $this->coatingX + $this->coatingWidth;
+        $this->complementaryX = $this->columnSpacement + $this->coatingX + $this->coatingWidth;
 
         //Pega só o que for revestimento e elimina os vazios
          $data = $this->getByType( 'complementary' );
@@ -266,90 +295,89 @@ class DrawSideViews extends Draw{
 
          foreach( $data as $row ){  if( $row['col_num'] > $columnsNumber ) $columnsNumber = $row['col_num'];  }
 
-         //Largura da Anular
-         $this->widthComplementary = $this->columnWidth * $columnsNumber;
-
-
          //Loop pelas linhas
          foreach( $data as $row ){
              //Adiciona o canal às legendas inferiores
-             $this->addMaterial( $row['material_name'], $row['background_color'] );
+             $this->addMaterial( $row['material_name'], $row['background_color'], $row['image'] );
 
              //Calcula os posicionamentos do retângulo
-             $x = $this->xStartComplementary + ( $row[ 'col_num'   ] * $this->columnWidth );
+             $x = $this->complementaryX;
              $y = $this->verticalMargin   + $this->topLabelsHeight + ( $row[ 'm_initial' ] * $this->ratio );
-             $w = $this->columnWidth;
+             $w = $this->complementaryWidth;
              $h =  ( $row[ 'm_final' ] - $row[ 'm_initial' ] ) * $this->ratio;
 
-             $this->rectangle( $x, $y, $w, $h, $row['background_color'] );
+             if( isset( $row['image'] ) ) $this->addTexture ( $x, $y, $w, $h, $row['image'], $row['background_color'] );
+             else $this->rectangle( $x, $y, $w, $h, $row['background_color'] );
          }
 
          //Desenha o label superior do revestimento
          $topComplementaryLabelY       = $this->verticalMargin + $this->topLabelsHeight;
 
          $this//linhas verticais inferiores
-              ->line( $this->xStartComplementary + $this->columnWidth, $topComplementaryLabelY, 10, 90, $this->topComplementaryColor )
-              ->line( $this->xStartComplementary + $this->columnWidth + ( $this->columnWidth * $columnsNumber ), $topComplementaryLabelY, 10, 90, $this->topComplementaryColor )
+              ->line( $x, $topComplementaryLabelY, 10, 90, $this->topComplementaryColor )
+              ->line( $x + $this->complementaryWidth, $topComplementaryLabelY, 10, 90, $this->topComplementaryColor )
               //linha horizontal
-              ->line( $this->xStartComplementary + $this->columnWidth, $topComplementaryLabelY - 10, $this->columnWidth * $columnsNumber, 0, $this->topComplementaryColor )
+              ->line( $x, $topComplementaryLabelY - 10, $this->complementaryWidth, 0, $this->topComplementaryColor )
          ;
 
          //posicionamento da linha e do texto da legenda superior
-         $centerX =   $this->columnWidth+( $this->columnWidth * $columnsNumber ) / 2;
-         $this->line( $this->xStartComplementary + $centerX, $topComplementaryLabelY - 10, 10, 90, $this->topComplementaryColor )
-              ->text( 'Anular',  $this->xStartComplementary + $centerX, $topComplementaryLabelY - 20, $this->topComplementaryColor, 8, 45)
+         $centerX =   $x + ( $this->complementaryWidth  / 2);
+         $this->line( $centerX, $topComplementaryLabelY - 10, 10, 90, $this->topComplementaryColor )
+              ->text( 'Anular',  $centerX, $topComplementaryLabelY - 20, $this->topComplementaryColor, 8, 45)
          ;
     }
 
     public function drawCoating(){
         //X do início do revestimento
-        $this->xStartCoating = $this->horizontalMargin + $this->slotLabelsWidth + $this->waterWidth;
+        //$this->xStartCoating = $this->horizontalMargin + $this->slotLabelsWidth + $this->waterWidth;
+        $this->coatingX = $this->horizontalMargin + $this->slotLabelsWidth + $this->waterWidth + $this->columnSpacement;
+        
 
         //Pega só o que for revestimento e elimina os vazios
          $data = $this->getByType( 'coating' );
          //Número de colunas
-         $columnsNumber = 1;
+         //$columnsNumber = 1;
 
          //terminando se estiver vazio
          if( empty( $data ) ) return;
 
-         foreach( $data as $row ){  if( $row['col_num'] > $columnsNumber ) $columnsNumber = $row['col_num'];  }
+         //foreach( $data as $row ){  if( $row['col_num'] > $columnsNumber ) $columnsNumber = $row['col_num'];  }
 
          //Loop pelas linhas
          foreach( $data as $row ){
              //Adiciona o canal às legendas inferiores
-             $this->addMaterial( $row['material_name'], $row['background_color'] );
+             $this->addMaterial( $row['material_name'], $row['background_color'], $row['image'] );
              //Calcula os posicionamentos do retângulo
-             $x = $this->xStartCoating + ( $row[ 'col_num'   ] * $this->columnWidth );
+             $x = $this->coatingX;
              $y = $this->verticalMargin   + $this->topLabelsHeight + ( $row[ 'm_initial' ] * $this->ratio );
-             $w = $this->columnWidth;
+             $w = $this->coatingWidth;
              $h =  ( $row[ 'm_final' ] - $row[ 'm_initial' ] ) * $this->ratio;
 
-             $this->rectangle( $x, $y, $w, $h, $row['background_color'] );
+             if( isset($row['image']) ) $this->addTexture( $x, $y, $w, $h, $row['image'], $row['background_color'] );
+             else $this->rectangle( $x, $y, $w, $h, $row['background_color'] );
          }
 
-         $this->widthCoating = $this->columnWidth * $columnsNumber;
+         //$this->widthCoating = $this->columnWidth * $columnsNumber;
 
          //Desenha o label superior do revestimento
          $topCoatingLabelY = $this->verticalMargin + $this->topLabelsHeight;
 
          $this//linhas verticais inferiores
-              ->line( $this->xStartCoating + $this->columnWidth, $topCoatingLabelY, 10, 90, $this->topCoatingColor )
-              ->line( $this->xStartCoating + $this->columnWidth + ( $this->columnWidth * $columnsNumber ), $topCoatingLabelY, 10, 90, $this->topCoatingColor )
+              ->line( $x, $topCoatingLabelY, 10, 90, $this->topCoatingColor )
+              ->line( $x + $this->coatingWidth, $topCoatingLabelY, 10, 90, $this->topCoatingColor )
               //linha horizontal
-              ->line( $this->xStartCoating + $this->columnWidth, $topCoatingLabelY - 10, $this->columnWidth * $columnsNumber, 0, $this->topCoatingColor )
+              ->line( $x, $topCoatingLabelY - 10,$this->coatingWidth , 0, $this->topCoatingColor )
          ;
 
          //posicionamento da linha e do texto da legenda superior
-         $centerX =   $this->columnWidth+( $this->columnWidth * $columnsNumber ) / 2;
-         $this->line( $this->xStartCoating + $centerX, $topCoatingLabelY - 10, 10, 90, $this->topCoatingColor )
-              ->text( 'Revestimento',  $this->xStartCoating + $centerX, $topCoatingLabelY - 20, $this->topCoatingColor, 8, 45)
+         $centerX =   $x + ($this->coatingWidth/ 2);
+         $this->line( $centerX, $topCoatingLabelY - 10, 10, 90, $this->topCoatingColor )
+              ->text( 'Revestimento',  $centerX, $topCoatingLabelY - 20, $this->topCoatingColor, 8, 45)
          ;
     }
 
     public function drawFilter(){
         //Pega só o que for filtro, elimina os vazios
-        //pr('as');
          $data = $this->getByType( 'filter' );
          //pr($data);
          //Número de colunas
@@ -371,14 +399,16 @@ class DrawSideViews extends Draw{
          //Loop pelas linhas
          foreach( $data as $row ){
              //Adiciona o canal às legendas inferiores
-             $this->addMaterial( $row['material_name'], $row['background_color'] );
+             $this->addMaterial( $row['material_name'], $row['background_color'], $row['image'] );
              //Calcula os posicionamentos do retângulo
              $x = $this->horizontalMargin + $this->slotLabelsWidth + ( $row['col_num'] * $this->columnWidth );
              $y = $this->verticalMargin   + $this->topLabelsHeight + ( $row[ 'm_initial' ] * $this->ratio );
              $w = $this->columnWidth;
              $h =  ( $row[ 'm_final' ] - $row[ 'm_initial' ] ) * $this->ratio;
 
-             $this->rectangle( $x, $y, $w, $h, $row['background_color']   );
+             
+             if( isset( $row['image'] ) ) $this->addTexture( $x, $y, $w, $h, $row['image'], $row['background_color']   );
+             else $this->rectangle( $x, $y, $w, $h, $row['background_color']   );
 
              //Calcula o posicionamento do texto da legenda
              $text = 'Ranhura: ' . $this->numBR($row['slot']) . 'mm';
@@ -433,22 +463,25 @@ class DrawSideViews extends Draw{
     public function drawWater( $columnsNumber ){
         $x                  = $this->horizontalMargin + $this->slotLabelsWidth;
         $y                  = $this->verticalMargin   + $this->topLabelsHeight;
-        $bgColor            = 'CCCCFF';
+        // $bgColor            = 'CCCCFF';
 
         $this->waterWidth   = ( 2 + $columnsNumber )  * $this->columnWidth;
 
         //Adiciona o canal às legendas inferiores
-        $this->addMaterial( 'Canal', $bgColor );
-
-        return $this->rectangle( $x, $y, $this->waterWidth, $this->availableHeight, $bgColor );
+        $this->addMaterial( 'Canal', $this->colorWater, $this->tileWater );
+        
+        return $this->addTexture( $x, $y, $this->waterWidth, $this->availableHeight, $this->tileWater , $this->colorWater );
+        //return $this->rectangle( $x, $y, $this->waterWidth, $this->availableHeight, $this->colorWater );
     }
 
     /*
      * Adiciona um material para poder gerar sua legenda ao final
      */
-    public function addMaterial( $name, $color ){
-        $this->labels[ $color ] = $name;
+    public function addMaterial( $name, $color, $image ){
+        $this->labels[ $color ] = [ 'name' => $name, 'image' => $image ];
     }
+
+
 
 
     /*
@@ -550,9 +583,13 @@ class DrawSideViews extends Draw{
         $this->text('Legenda', $xIni, $yIni + 15, '000000', 10);
 
         $yIni+=25;
-        foreach($this->labels as $color => $name){
-
-            $this->rectangle($xIni + ($count * 100), $yIni, 15, 15, $color);
+        foreach($this->labels as $color => $row){
+            $name = $row['name'];
+            
+            if( $row['image'] ) $this->addTexture($xIni + ($count * 100), $yIni, 15, 15, $row['image'], $color);
+            else $this->rectangle($xIni + ($count * 100), $yIni, 15, 15, $color);
+            
+            
             $this->text($name, $xIni + ($count * 100) + 22, $yIni+12, '000000', 9);
 
             //Aumente o count dependendo do tamanho do nome para evitar que a legenda
