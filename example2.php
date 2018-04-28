@@ -77,7 +77,7 @@ ds
     $img->setData($sideviews);
 
     //Recebe a imagem
-    $img->getImage();
+    $img->show();
 
     //Elimina as variáveis
     $img = null;

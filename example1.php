@@ -66,7 +66,7 @@
     // Define o valor cadastrado para a profundidade do poço em metro
     // Esse valor virá do banco de dados. Ele não é calculado automaticamente para 
     // que a informação p
-    $img->setDepth( $_POST['depth'] );
+    if(isset($_POST['depth']) && !empty($_POST['depth'])) $img->setDepth( $_POST['depth'] );
 
     //Define o maior valor dentre os perfis cadastrados para fins de cálculo dos perfis
     //Basicamente é o maior profundidade registrada em qualquer dos perfis
@@ -76,7 +76,7 @@
     $img->setData($_POST['field']);
 
     //Recebe a imagem
-    $img->getImage();
+    $img->show();
 
     //Elimina as variáveis
     $img = null;

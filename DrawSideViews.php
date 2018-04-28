@@ -389,7 +389,7 @@ class DrawSideViews extends Draw{
          foreach( $data as $row ){  if( $row['col_num'] > $columnsNumber ) $columnsNumber = $row['col_num'];  }
          //pr($columnsNumber);
          //Desenha a água
-         $this->drawWater( $columnsNumber );
+         //$this->drawWater( $columnsNumber );
 
          //Armazena os y de cada um dos labels dos filtros para evitar colocar
          //2 labels em um mesmo local.
@@ -524,7 +524,7 @@ class DrawSideViews extends Draw{
     /*
      *
      */
-    public function getImage(){
+    public function show(){
         //Define o tamanho máximo da altura
         $this->setMaxHeight();
         //Ativa as proporções
@@ -544,6 +544,8 @@ class DrawSideViews extends Draw{
             //Desenha as linhas de grade
             $this->drawGridLines();
             //Desenha os filtros
+            $this->drawWater(1);
+            //Desenha os filtros
             $this->drawFilter();
             //Desenha o revestimento
             $this->drawCoating();
@@ -562,7 +564,7 @@ class DrawSideViews extends Draw{
         }
 
         //Devolve a imagem como PNG
-        parent::getImage();
+        parent::show();
     }
 
     /*
