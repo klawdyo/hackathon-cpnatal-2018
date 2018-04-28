@@ -1,4 +1,5 @@
 <?php
+require 'DrawException.php';
 require 'Utils.php';
 require 'Filesystem.php';
 
@@ -48,6 +49,18 @@ class Draw{
 
     /*
       @var
+      Current
+     */
+    public $current;
+
+    /*
+      @var
+      Dados das Formas geométricas
+     */
+    public $forms;
+
+    /*
+      @var
       Fonte padrão, relativo a /public/fonts
      */
     public $fontSize = '13';
@@ -57,6 +70,14 @@ class Draw{
         Define se é png, jpg ou gif
      */
     private $fileType = 'PNG';
+
+    /*
+        @var $errors
+        Armazena erros
+     */
+    protected $errors = [];
+
+
 
     /*
      * Construtor
@@ -216,21 +237,37 @@ class Draw{
     }
 
     /**
-     * Desenha um polígono de n lados
+     * Desenha um polígono regular de n lados
      * 
      * 
      * @param int $x
      * @param int $y
      * @param int $w
-     * @param int $h 
-     * @param int $nSides Número de lados, sendo maior ou igual a 3
+     * @param int $h não precisa de altura pois é regular
+     * @param int $n Número de lados, sendo maior ou igual a 3
      * @param string $color Cor em hexadecimal
      * @param optional boolean $filled
      */
-    public function polygon( $x, $y, $w, $h, $nSides, $color, $filled ){
+    public function polygon( $x, $y, $w, $n, $color, $filled = true ){
+        try{
+            $radius = $w/2;
+            $y += $radius;
+            $x += $radius;
 
+            $points = [];
+            for($a = 0;$a <= 360; $a += 360/$n)
+            {
+                $points[] = $x + $radius * cos(deg2rad($a));
+                $points[] = $y + $radius * sin(deg2rad($a));
+            }
 
+            $func = $filled ? 'imagefilledpolygon' : 'imagepolygon';
 
+            $func($this->img, $points, floor(count($points)/2), $this->getColor($color)  );
+        }
+        catch( Exception $e ){
+            $this->setError( $e->getMessage() );
+        }
 
         return $this;
     }
@@ -238,7 +275,57 @@ class Draw{
     /**
      * Desenha uma forma livre
      */
-    public function freeForm(){
+    public function freeForm( $points, $color, $filled = true ){
+        try{
+
+        }
+        catch( Exception $e ){
+            $this->setError( $e->getMessage() );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Desenha um arco. O arco é desenhado em sentido horário seguindo o contorno de uma elipse
+     * com tamanho definido em $w e $h e posicionada em $x e $y. O arco inicia desenhando do angulo
+     * inicial em sentido horário e vai até o ângulo final.
+     * http://php.net/manual/en/function.imagefilledarc.php
+     * http://php.net/manual/en/function.imagearc.php
+     * 
+     * Se for um arco preenchido, o parâmetro $style poderá conter os seguintes valores:
+     * IMG_ARC_PIE    Conecta as pontas seguindo o contorno da elipse que gerou o arco em sentido horário. 
+     *                Se for usado junto com NOFILL, não conecta pelo centro, deixa o arco aberto.
+     *                Não pode ser usado junto com IMG_ARC_CHORD.
+     * IMG_ARC_CHORD  Conecta as pontas com uma linha reta. Não pode ser usado junto com IMG_ARC_PIE.
+     * IMG_ARC_NOFILL Define que não terá preenchimento, só linhas.
+     * IMG_ARC_EDGED  Define que as pontas ficarão ligadas pelo centro.
+     * 
+     * @param int  $x       X esquerdo da elipse que gerará o arco
+     * @param int  $y       Y superior esquerdo da elipse que gerará o arco
+     * @param int  $w       Largura da elipse que gerará o arco
+     * @param int  $h       Altura da elipse que gerará o arco
+     * @param int  $start   Ângulo inicial de onde o arco começará a ser desenhado, em graus. 0º representa o ponteiro das horas às 3:00
+     * @param int  $end     Ângulo final até onde o arco será desenhado, em graus
+     * @param int  $color   Cor em hexadecimal
+     * @param bool $filled  Define se será preenchido ou só a linha
+     * @param string $style Define o estilo do arco, conforme descrição acima
+     */
+    public function arc( $x, $y, $w, $h, $start, $end, $color, $filled = true, $style = IMG_ARC_PIE ){
+        $func = $filled ? 'imagefilledarc' : 'imagearc';
+        //imageantialias($this->img, true);
+        if( $filled ){
+            switch( $style ){
+                case 'pie'    : $style = IMG_ARC_PIE;    break; // Preenche e liga as pontas ao centro, gerando uma pizza
+                case 'chord'  : $style = IMG_ARC_CHORD;  break; // Somente conecta os pontos de início e fim do arco, enquanto PIE gera a linha arredondada
+                case 'nofill' : $style = IMG_ARC_NOFILL; break; // Indica para não preencher, deixar só a linha 
+                case 'edged'  : $style = IMG_ARC_EDGED;  break; // Se usado nunto com nofill, conecta a linha ao centro e deixa parecido com o PIE não preenchido
+            }
+            imagefilledarc( $this->img, $x + ( $w / 2 ), $y + ( $h / 2 ), $w, $h, $start, $end, $this->getColor( $color ), $style );
+        }
+        else{
+            imagearc( $this->img, $x + ( $w / 2 ), $y + ( $h / 2 ), $w, $h, $start, $end, $this->getColor( $color ) );
+        }
 
         return $this;
     }
@@ -250,19 +337,14 @@ class Draw{
     public function tiles(  $w, $h, $path, $backgroundColor ){
         // Imagem vazia com uma cor de fundo
         $im = ( new Draw( $w, $h, $backgroundColor ) )->img;
-    
-        // $stamp = imagecreatefromxxx('./tiles/claudio.jpeg');
+        // Imagem de ladrilho
         $stamp = $this->createFromXxx( $path );
-    
-        // Dimensões da imagem de background
-        $bgWidth    = imagesx($im);
-        $bgHeight   = imagesy($im);
         // Dimensões do ladrilho
         $tileWidth  = imagesx($stamp);
         $tileHeight = imagesy($stamp);
         // Linhas e Colunas a serem repetidas
-        $cols = $bgWidth  > $tileWidth  ? ceil( $bgWidth / $tileWidth )   : 1;
-        $rows = $bgHeight > $tileHeight ? ceil( $bgHeight / $tileHeight ) : 1;
+        $cols = $w > $tileWidth  ? ceil( $w / $tileWidth  ) : 1;
+        $rows = $h > $tileHeight ? ceil( $h / $tileHeight ) : 1;
         // Loop pelas linhas e colunas
         for( $i = 0; $i < $cols; $i++ ){
             for( $j = 0;$j < $rows; $j++ ){
@@ -274,16 +356,78 @@ class Draw{
     }    
 
     /**
-     * Usa as tiles() para adicionar uma textura a um retângulo
+     * Cria um retângulo com uma cor de fundo e uma imagem que se repete, como textura, ladrilho, telha, etc
+     * Se a imagem for transparente, a cor de fundo ficará misturada com ela e dará a impressão de textura
+     * 
      */
-    public function addTexture( $x, $y, $w, $h, $path, $bgColor ){
-        //imag  
+    public function addTexture( $x, $y, $w, $h, $path, $bgColor = '#FFFFFF' ){
+        //imagem
         $texture = $this->tiles( $w, $h, $path, $bgColor );
         $this->imageMerge( $this->img, $texture, $x, $y, 0,0,imagesx( $texture ), imagesy($texture), 100 );
 
         return $this;
     }
     
+    ##########################################################################################
+    ##
+    ##  MÉTODOS DE CONFIGURAÇÃO INDIVIDUAL
+    ##  Métodos usados para configurar individualmente um elemento
+    ##  Ex.: rotate(), dashed(), alpha(), dimensions(), position()
+    ##  $img->rotate(45)->alpha(50)->position(0,0)->dimensions(10, 50)->rectangle() //Cria um retângulo 
+    ##  rotacionado e com  transparência de 50% com o tamanho e as coordenadas especificadas
+    ##
+    ##
+    ##########################################################################################
+    
+    /**
+     * TO DO
+     * Usado antes de um elemento, aplica uma transparência a ele
+     * 
+     * @param int $alpha Transparência a ser aplicada a um elemento
+     */
+    // public function alpha( $alpha ){ return $this; }
+
+    /**
+     * Define um ângulo para o elemento. Apelido para angle()
+     */
+    // public function rotate( $angle ){ return $this; }
+
+    /**
+     * Define um ângulo para o elemento
+     */
+    // public function angle( $angle ){ return $this; }
+
+    /**
+     * Aplica uma imagem sobre o elemento
+     */
+    // public function texture( $path ){ return $this; }
+
+    /**
+     * Define uma linha como tracejada
+     */
+    // public function dashed( $color, $colorSpacement, $noColorSpacement ){ return $this; }
+
+    /**
+     * Apelido para dashed( 1,1 ), onde o tracejado tem 1 pixel de cor 1 
+     * 1 pixel de espaço
+     */
+    // public function dotted( $color ){ return $this; }
+
+    /**
+     * Define as dimensões da forma
+     * Se $height for null, use o mesmo $width
+     */
+    // public function dimensions( $width, $height = null ){ return $this; }
+
+    /**
+     * Define a posição da forma
+     */
+    // public function position( $x,$y ){ return $this; }
+
+    /**
+     * 
+     */
+    // public function filled( $color ){ return $this; }
 
     ##########################################################################################
     ##
@@ -292,23 +436,10 @@ class Draw{
     ##########################################################################################
 
 
-    /**
-     * Força o download da imagem
-     * 
-     * @param optional string $name Nome da imagem
-     * @return $this 
-     */
-    public function download( $name = null ){
-        $name = $name ? $name : 'image.' . strtolower( $this->fileType );
-        header('Content-Disposition:attachment;filename="'. $name .'"');
-
-        return $this;
-    }
-
     /*
      * Retorna a imagem salva
      */
-    public function getImage(){
+    public function show(){
         $type = strtolower( $this->fileType );
 
         switch( $type ){
@@ -326,16 +457,33 @@ class Draw{
             break;
         }
 
+        //Tratamento de erros
+        $this->getErrors();
+        
         // Envia o cabeçalho do tipo da imagem
         header('Content-Type: ' . $mime );
-
+        
         // Finaliza e exibe a imagem
         $func($this->img);
-        
+
         // Libera memória
-        imagedestroy($this->img);
+        $this->destroy();
     }
 
+
+    /**
+     * Força o download da imagem
+     * 
+     * @param optional string $name Nome da imagem
+     * @return $this 
+     */
+    public function download( $name = null ){
+        $name = $name ? $name : 'image.' . strtolower( $this->fileType );
+        header('Content-Disposition:attachment;filename="'. $name .'"');
+        $this->show();
+
+        return $this;
+    }
 
 
     ##########################################################################################
@@ -386,21 +534,33 @@ class Draw{
      * Cria o objeto da imagem com as configurações iniciais
      *
      */
-    private function create(){
-        //$this->height = 1200;
+    protected function create(){
         //Crio a imagem inicial
         $this->img = imagecreatetruecolor($this->width, $this->height);
-        //$white = imagecolorallocate($this->img, 255, 255, 255);
+        //Crio uma imagem preenchida
         imagefill($this->img, 0, 0, $this->getColor( $this->backgroundColor ));
+        // Defino o antialiasing como true
         imageantialias($this->img, true);
+        // Defino o suporte a transparência como true
         imageAlphaBlending($this->img, true);
         imageSaveAlpha($this->img, true);
     }
 
     /**
-     * Cria uma imagem a partir de outra de extensões jpg e png
+     * 
      */
-    function createFromXxx( $path ) {
+    protected function destroy(){
+        imagedestroy($this->img);
+        $this->img = null;
+    }
+
+    /**
+     * Cria uma imagem a partir de outra imagem de qualquer tipo.
+     * 
+     * @param string path Endereço da imagem
+     * @return resource da imagem
+     */
+    protected function createFromXxx( $path ) {
         $extension = Filesystem::extension($path);
         switch( $extension ){
             case 'png'  : return imagecreatefrompng ( $path ); break;
@@ -408,9 +568,6 @@ class Draw{
             case 'jpg'  : return imagecreatefromjpeg( $path ); break;
         }
     }
-
-    
-        
 
     /*
      * Pega uma cor alocada
@@ -476,21 +633,113 @@ class Draw{
      *
      */
     private function isValidHex($hex){
-        //Se começa com '#', retire
-        if($hex[0] == '#'){
-            $hex = substr($hex, 1);
-        }
+        try{
+            //Se começa com '#', retire
+            if($hex[0] == '#'){
+                $hex = substr($hex, 1);
+            }
 
-        //se tem 6 letras, continue;
-        if(strlen($hex) != 6){ trigger_error('Formato de cor inválido: "' . $hex . '"'); }
+            // Se tem 3 letras, repita-as no formato AABBCC
+            if( strlen( $hex ) === 3 ) $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2]; 
+            //se tem 6 letras, continue;
+            if(strlen($hex) != 6){ $this->setError('Cor "' . $hex . '" informada com '. strlen($hex) .' letras'); }
 
-
-        //Se só tem caracteres hexadecimais
-        if(preg_match('/^[0-9a-fA-F]{6}$/', $hex) == false){
-            trigger_error('Formato de cor inválido: "' . $hex . '"');
-        }
-
-        return strtoupper($hex);
+            //Se só tem caracteres hexadecimais
+            if(preg_match('/^[0-9a-fA-F]{6}$/', $hex) == false){
+                $this->setError('Caracteres não hexadecimais encontrados na cor "' . $hex . '"');
+            }
+            
+            return strtoupper($hex);
+        }   
+        catch( Exception $e ){
+            $this->setError($e->message);
+        }   
     }
 
+
+    ##########################################################################################
+    ##
+    ##  TRATAMENTO DE ERROS
+    ##
+    ##########################################################################################
+    
+    /*
+     *
+     */
+    public function hasErrors(){
+        return !empty($this->errors);
+    }
+
+    /*
+     * public function
+     */
+    public function setError($text){
+        $this->errors[] = $text;
+        return $text;
+    }
+
+    /*
+     *
+     */
+    public function getErrors(){
+        $x = 10;
+        $y = 10;
+        $lineHeight = 15;
+        //$this->text( 'teste', 0, 0, '000000', 10 );
+        
+        if($this->hasErrors()){
+            array_unshift( $this->errors, 'Atenção! Ocorreram os seguintes erros:' );
+            //Pega o número de erros e aplica em um quadrado vermelho sobre todos os outros
+            $this->rectangle( 0, 0, $this->width, count( $this->errors ) * $lineHeight+20, '#000' );
+            // $this->rectangle(0,0,$this->width, $lineHeight, '#000000', false);
+            //$this->text('Os seguintes erros aconteceram:', $x, $y, '000000', 10);
+            //$x += 20;
+            $y += $lineHeight;
+
+            foreach($this->errors as $text){
+                $this->text($text, $x, $y, 'FFF', 10);
+                $y += $lineHeight;
+            }
+        }
+    }
+
+    /**
+     * Verifica se faltam parâmetros obrigatórios em cada tipo de forma
+     * formato:
+     *  $fields = [
+     *      'x' => 'rules' => [ 'required', 'integer' ], 'value' => 34
+     * ];
+     */
+    protected function validate( $fields = [] ){
+        $errors = [];
+        if( is_array( $fields ) && !empty( $fields ) ){
+
+                //Transforme as regras em array, caso não sejam
+                $fields['rules'] = !is_array( $fields['rules'] ) ? [ $fields['rules'] ] : $fields['rules'];
+                //Loop pelas regras
+                foreach( $fields as $key => $array  ){
+                    $rules = is_array( $array ) && isset( $array['rules'] ) ? $array['rules'] : [];
+
+                    if( $idx = array_search( 'integer', $rules  ) > -1 && !is_int( $array[ 'value' ] ) ) $errors[] = $key . 'not integer';
+                    if( $idx = array_search( 'required', $rules ) > -1 && empty(   $array[ 'value' ] ) ) $errors[] = $key . ' empty'     ;
+                }
+        }
+        else{
+            $this->setError( '$fields está vazio ou não é um array' );
+        }
+    }
+
+    /*
+     * Pega os dados do campo atual 
+     */
+    protected function current(){
+        if( $this->current === null ) 
+            return $this->current = count($this->forms);
+        return $this->current;
+    }
+    
+
 }
+
+
+
