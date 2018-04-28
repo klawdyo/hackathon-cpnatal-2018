@@ -4,7 +4,7 @@ ds
     require 'DrawSideViews.php';
 
     //Inicia a classe passando a largura e altura da imagem como parâmetro
-    $img = new DrawSideViews(640, 640, 'FAFAFA');
+    $img = new DrawSideViews(1000, 1300, 'FAFAFA');
 
     /**
      * Configurações
@@ -58,6 +58,8 @@ ds
         
 
     ];
+
+    $img->columnSpacement = 1;
 
     //Encerre, caso não venha nada via POST
     // if( empty($_POST['field']) ){

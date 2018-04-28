@@ -25,3 +25,7 @@
         return $var = isset($var) ? $var : $default;
     }
 
+
+    function pr( $e ){
+        echo '<pre>', print_r($e, true), '</pre>';
+    }
