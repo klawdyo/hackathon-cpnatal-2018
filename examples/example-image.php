@@ -1,7 +1,7 @@
 ds
 <?php
 
-    require 'DrawSideViews.php';
+    require '../lib/DrawSideViews.php';
 
     //Inicia a classe passando a largura e altura da imagem como parâmetro
     $img = new DrawSideViews(840, 1240, 'FAFAFA');

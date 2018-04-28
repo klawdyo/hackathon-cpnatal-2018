@@ -1,5 +1,5 @@
 <?php
-require 'Draw.php';
+require '../lib/Draw.php';
 $img = new Draw( 640, 640, '#ffffff' );
 
 
@@ -19,12 +19,12 @@ $img = new Draw( 640, 640, '#ffffff' );
 //     ->line( 150, 150, 100, 0, '#ff0000', true, 2, 10 )  // Retângulo vazado com as linhas vermelhas
 //     ->line( 150, 200, 100, 0, '#ff0000', false );       // Retângulo preenchido vermelho
 
-$img->addTexture( 10, 10, 50, 100, './tiles/carvaoativado.png',  '#00f' );
-$img->addTexture( 70, 10, 50, 100, './tiles/carvaoativado.png',  '#f00' );
-$img->addTexture( 130, 10, 50, 100, './tiles/carvaoativado.png', '#ff0' );
-$img->addTexture( 10, 120, 50, 100, './tiles/carvaoativado.png', '#0ff' );
-$img->addTexture( 70, 120, 50, 100, './tiles/carvaoativado.png', '#0f0' );
-$img->addTexture( 130, 120, 50, 100, './tiles/carvaoativado.png','#f0f' );
+$img->addTexture( 10, 10, 50, 100, '../public/tiles/carvaoativado.png',  '#00f' );
+$img->addTexture( 70, 10, 50, 100, '../public/tiles/carvaoativado.png',  '#f00' );
+$img->addTexture( 130, 10, 50, 100, '../public/tiles/carvaoativado.png', '#ff0' );
+$img->addTexture( 10, 120, 50, 100, '../public/tiles/carvaoativado.png', '#0ff' );
+$img->addTexture( 70, 120, 50, 100, '../public/tiles/carvaoativado.png', '#0f0' );
+$img->addTexture( 130, 120, 50, 100, '../public/tiles/carvaoativado.png','#f0f' );
 
 
 $img

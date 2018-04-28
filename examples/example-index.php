@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Exemplo</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="../public/css/main.css">
 </head>
 <body>
     <script type="text/template" id="new-form">
@@ -14,11 +14,11 @@
             <input type="hidden" name="field[${index}][id]" id="current-id">
             <div class="input-group">
                 <select name="field[${index}][type]" id="type-${index}" onchange="enableFields(${index})">
-                    <option value="coating">Revestimento</option>
-                    <option value="diameter">Diâmetro (pol)</option>
                     <option value="filter">Filtro (mm)</option>
+                    <option value="coating">Revestimento</option>
                     <option value="complementary">Anular/Complemento</option>
                     <option value="lythologic">Litologia</option>
+                    <option value="diameter">Diâmetro (pol)</option>
                 </select>
             </div>
             <div class="input-group">
@@ -26,6 +26,9 @@
             </div>
             <div class="input-group">
                 <input type="color" name="field[${index}][background_color]" id="background-color-${index}" placeholder="Cor">
+            </div>
+            <div class="input-group">
+                <input type="text" name="field[${index}][image]" id="image-${index}" placeholder="Imagem">
             </div>
             <div class="input-group">
                 <input type="text" name="field[${index}][m_initial]" id="initial-footage-${index}" placeholder="Metragem inicial">
@@ -43,17 +46,17 @@
         </section>
     </script>
     <main>
-        <form id="form" method="post" action="example1.php" target="iframe">
+        <!-- <form id="form" method="post" action="example4.php" target="iframe">
             <div class="buttons">
                 <button type="button" id="add-new">Adicionar</button>
                 <button type="submit">Enviar</button>
             </div>
-        </form>
-        <aside>
-            <iframe name="iframe" src="example1.php"></iframe>
-        </aside>
+        </form> -->
     
-        <form id="form" method="post" action="example1.php" target="iframe">
+        <aside>
+            <iframe name="iframe" src="example4.php"></iframe>
+        </aside>
+        <form id="form" method="post" action="example4.php" target="iframe">
             <div class="depth input-group">
                 <input type="text" name="depth" id="depth" placeholder="Profundidade do Poço (m)">
             </div>
@@ -65,6 +68,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
-    <script src="main.js"></script>
+    <script src="../public/js/main.js"></script>
 </body>
 </html>

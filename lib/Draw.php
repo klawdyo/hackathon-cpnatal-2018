@@ -124,14 +124,12 @@ class Draw{
         //$hex = $this->isValidHex($hex);
         //$this->allocateColor($hex);
 
+        $base = '../public/fonts/';
+
         if(empty($font)){$font = $this->font;}
         if(empty($size)){$size = $this->fontSize;}
 
-        // Nome da fonte
-        //$font = Filesystem::path('/public/fonts/arial_narrow_7.ttf');
-        //$font = Filesystem::path('/public/fonts/' . $font);
-
-        imagettftext($this->img, $size, $angle, $x, $y, $this->getColor($hex), $font, $text);
+        imagettftext($this->img, $size, $angle, $x, $y, $this->getColor($hex), $base.$font, $text);
 
         return $this;
     }

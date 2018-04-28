@@ -122,7 +122,7 @@ class DrawSideViews extends Draw{
 
 
 
-    public $tileWater             = './tiles/water.png';    // Path da água
+    public $tileWater             = '../public/tiles/water.png';    // Path da água
     public $colorWater            = 'CCCCFF';               // Cor da água em hexadecimal sem o '#'
 
     public $verticalMargin        = 30;                     // margem superior e inferior
