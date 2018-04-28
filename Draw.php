@@ -58,7 +58,6 @@ class Draw{
      */
     private $fileType = 'PNG';
 
-
     /*
      * Construtor
      *
@@ -76,9 +75,12 @@ class Draw{
     /*
      * cria um quadrado
      */
-    public function rectangle( $x, $y, $width, $height, $color = null ){
+    public function rectangle( $x, $y, $width, $height, $color = null, $filled = true ){
+        //define a função
+        $func = $filled ? 'imagefilledrectangle' : 'imagerectangle';
+
         //cria o retângulo
-        imagefilledrectangle( $this->img, $x, $y, $x + $width, $y + $height, $this->getColor( $color ) );
+        $func( $this->img, $x, $y, $x + $width, $y + $height, $this->getColor( $color ) );
 
         //retorna o objeto para permitir concatenação
         return $this;
@@ -115,57 +117,131 @@ class Draw{
 
     /*
      * Desenha uma linha
-     *
+     * 
+     * 
+     * @param $x
+     * @param $y
+     * @param $size
+     * @param $angle
+     * @param $color
+     * @param $dashed
+     * @param $colorSpacement
+     * @param $noColorSpacement
+     * 
+     * @return object Retorna o proprio objeto para permitir o encadeamento de métodos  
      */
-    public function line($x, $y, $size, $angle = 0, $color = '000000', $dashed = false){
+    public function line($x, $y, $size, $angle = 0, $color = '000000', $dashed = false, $colorSpacement = 2, $noColorSpacement = 2){
 
-        //X2. São as coordenadas finais da linha. Tem que ser calculada baseando-se no ponto inicial,
         //ângulo e tamanho
-        $angle = 360 - $angle;// + 180;
+        $angle = 360 - $angle;
         //$angle -= 180;
-
-
+        
+        
         $cos = round(cos(deg2rad($angle)), 2);
         $sin = round(sin(deg2rad($angle)), 2);
-
-
+        
+        
+        //X2. São as coordenadas finais da linha. Tem que ser calculada baseando-se no ponto inicial,
         $x2 = ($cos * $size ) + $x;
         $y2 = ($sin * $size ) + $y;
-
-
-        /*$this->text('x2:'.$x2, 10, 20)
-             ->text('y2:'.$y2, 10, 50)
-             ->text('cos(' . $angle . '): ' . $cos, 10, 80)
-             ->text('sin(' . $angle . '): ' . $sin, 10, 110)
-             ;*/
-
+        
+        
         $color = $this->getColor($color);
-        $white = $this->getColor('000000');
+        
+        if($dashed){
+            // $colorLength = 2;   // Tamanho da repetição de pixels da cor
+            // $spaceLength = 2;   // Tamanho da repetição de pixels transparentes
 
-        //if($dashed){
-            $style = array($white, $white, $white, $white, $white, $white, $white, $color, $color, $color);
-            imagesetstyle($this->img, $style);
-        //}
-        //imageline ( resource $image , int $x1 , int $y1 , int $x2 , int $y2 , int $color )
-        imageline($this->img, $x, $y, $x2, $y2, $color);
+            // Cria um array no estilo [ red, red, transparent, transparent ] de acordo com as configurações
+            // em $colorLength e $spaceLength e passa como estilo para a linha gerada
+            $style =  array_merge( array_fill(0, $colorSpacement, $color ), array_fill( 0, $noColorSpacement, IMG_COLOR_TRANSPARENT ) );
+            
+            imageantialias($this->img, false);                          // Desativa o antialiasing para conseguir uma linha pontilhada
+            imagesetstyle($this->img, $style);                          // Cria o estilo da linha
+            imageline($this->img, $x, $y, $x2, $y2, IMG_COLOR_STYLED);  // Cria a linha
+            imageantialias($this->img, true);                           // Reativa o antialiasing
+        }
+        else{
+            imageline($this->img, $x, $y, $x2, $y2, $color);
+        }
 
+            
 
         return $this;
     }
 
     /*
      * Cria um círculo
+     * 
      * imagefilledellipse ( resource $image , int $cx , int $cy , int $width , int $height , int $color )
+     * O PHP usa x e y para criar o círculo a partir do seu centro, mas Draw usa as extremidades direita
+     * e esquerda para manter a padronização com as demais funções
+     * 
+     * @param $x X da extremidade direta do círculo para o lado esquerdo da imagem
+     * @param $y Y da extremidade superior do círculo para o lado superior da imagem
+     * @param $w Diâmetro da circunferência
+     * @param $color Cor em hexadecimal
+     * @param optional $filled Define se o círculo deve ou não deve ser preenchido
+     * 
      */
     public function circle($x, $y, $w, $color, $filled = true){
+        // $func = ($filled) ? 'imagefilledellipse' : 'imageellipse';
+
+        // $func($this->img, $x + ($w/2), $y + ($w/2), $w, $w, $this->getColor($color));
+
+        return $this->ellipse( $x, $y, $w, $w, $color, $filled );
+    }
+
+    /*
+     * Cria uma elipse
+     * 
+     * imagefilledellipse ( resource $image , int $cx , int $cy , int $width , int $height , int $color )
+     * O PHP usa x e y para criar o círculo a partir do seu centro, mas Draw usa as extremidades direita
+     * e esquerda para manter a padronização com as demais funções
+     * 
+     * @param $x X da extremidade direta do círculo para o lado esquerdo da imagem
+     * @param $y Y da extremidade superior do círculo para o lado superior da imagem
+     * @param $w Largura da elipse
+     * @param $h Atura da elipse
+     * @param $color Cor em hexadecimal
+     * @param optional $filled Define se o círculo deve ou não deve ser preenchido
+     * 
+     */
+    public function ellipse($x, $y, $w, $h, $color, $filled = true){
         $func = ($filled) ? 'imagefilledellipse' : 'imageellipse';
 
-        $func($this->img, $x + ($w/2), $y + ($w/2), $w, $w, $this->getColor($color));
+        $func($this->img, $x + ($w/2), $y + ($h/2), $w, $h, $this->getColor($color));
 
         return $this;
     }
 
+    /**
+     * Desenha um polígono de n lados
+     * 
+     * 
+     * @param int $x
+     * @param int $y
+     * @param int $w
+     * @param int $h 
+     * @param int $nSides Número de lados, sendo maior ou igual a 3
+     * @param string $color Cor em hexadecimal
+     * @param optional boolean $filled
+     */
+    public function polygon( $x, $y, $w, $h, $nSides, $color, $filled ){
 
+
+
+
+        return $this;
+    }
+
+    /**
+     * Desenha uma forma livre
+     */
+    public function freeForm(){
+
+        return $this;
+    }
 
     /**
      * Cria uma imagem colorida de dimensões específicas e aplica uma segunda imagem como 
@@ -195,9 +271,6 @@ class Draw{
         }
         
         return $im;
-        //header('Content-type: image/png');
-        //imagepng($im);
-        //imagedestroy($im);
     }    
 
     /**
@@ -219,16 +292,48 @@ class Draw{
     ##########################################################################################
 
 
+    /**
+     * Força o download da imagem
+     * 
+     * @param optional string $name Nome da imagem
+     * @return $this 
+     */
+    public function download( $name = null ){
+        $name = $name ? $name : 'image.' . strtolower( $this->fileType );
+        header('Content-Disposition:attachment;filename="'. $name .'"');
+
+        return $this;
+    }
 
     /*
      * Retorna a imagem salva
      */
     public function getImage(){
-        header('Content-Type: image/png');
+        $type = strtolower( $this->fileType );
 
-        //Finaliza e exibe a imagem
-        imagepng($this->img);
+        switch( $type ){
+            case 'png':
+                $mime = 'image/png';
+                $func = 'imagepng';
+            break;
+            case 'jpg':
+                $mime = 'image/jpeg';
+                $func = 'imagejpeg';
+            break;
+            case 'gif':
+                $mime = 'image/gif';
+                $func = 'imagegif';
+            break;
+        }
 
+        // Envia o cabeçalho do tipo da imagem
+        header('Content-Type: ' . $mime );
+
+        // Finaliza e exibe a imagem
+        $func($this->img);
+        
+        // Libera memória
+        imagedestroy($this->img);
     }
 
 
@@ -244,6 +349,8 @@ class Draw{
      */
     public function asPng(){
         $this->fileType = 'PNG';
+        
+        return $this;
     }
 
 
@@ -252,6 +359,8 @@ class Draw{
      */
     public function asJpg(){
         $this->fileType = 'JPG';
+        
+        return $this;
     }
 
 
@@ -260,6 +369,8 @@ class Draw{
      */
     public function asGif(){
         $this->fileType = 'GIF';
+        
+        return $this;
     }
 
 
@@ -316,7 +427,7 @@ class Draw{
      *
      */
     private function allocateColor($hex){
-        $hex = $this->isValidHex($hex);
+        $hex   = $this->isValidHex($hex);
         $color = $this->toRGB($hex);
         $this->allocatedColors[$hex] = imagecolorallocate($this->img, $color->red, $color->green, $color->blue);
     }
@@ -352,9 +463,9 @@ class Draw{
         $obj = new stdClass();
 
         //Pega de 2 em 2 caracteres e transforma para decimal
-        $obj->red =   str_pad(hexdec(substr($hex, 0, 2)), 2, '0');
+        $obj->red   = str_pad(hexdec(substr($hex, 0, 2)), 2, '0');
         $obj->green = str_pad(hexdec(substr($hex, 2, 2)), 2, '0');
-        $obj->blue =  str_pad(hexdec(substr($hex, 4, 2)), 2, '0');
+        $obj->blue  = str_pad(hexdec(substr($hex, 4, 2)), 2, '0');
 
 
         return $obj;
