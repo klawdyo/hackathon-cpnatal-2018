@@ -218,10 +218,9 @@ class Draw{
      * Desenha um polígono regular de n lados
      * 
      * 
-     * @param int $x
-     * @param int $y
-     * @param int $w
-     * @param int $h não precisa de altura pois é regular
+     * @param int $x Posição x em relação ao canto superior esquerdo
+     * @param int $y Posição y em relação ao canto superior esquerdo
+     * @param int $w Tamanho 
      * @param int $n Número de lados, sendo maior ou igual a 3
      * @param string $color Cor em hexadecimal
      * @param optional boolean $filled
