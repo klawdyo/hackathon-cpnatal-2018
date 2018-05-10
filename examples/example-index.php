@@ -45,18 +45,11 @@
             <button type="button" onclick="removeItem(${index})">X</button>
         </section>
     </script>
-    <main>
-        <!-- <form id="form" method="post" action="example4.php" target="iframe">
-            <div class="buttons">
-                <button type="button" id="add-new">Adicionar</button>
-                <button type="submit">Enviar</button>
-            </div>
-        </form> -->
-    
+    <main> 
         <aside>
-            <iframe name="iframe" src="example4.php"></iframe>
+            <iframe name="iframe" src="example-image.php"></iframe>
         </aside>
-        <form id="form" method="post" action="example4.php" target="iframe">
+        <form id="form" method="post" action="example-image.php" target="iframe">
             <div class="depth input-group">
                 <input type="text" name="depth" id="depth" placeholder="Profundidade do Poço (m)">
             </div>
