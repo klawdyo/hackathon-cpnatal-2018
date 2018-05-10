@@ -3,7 +3,7 @@ ds
 
     require '../lib/DrawSideViews.php';
 
-    //Inicia a classe passando a largura e altura da imagem como parâmetro
+    // Inicia a classe passando a largura e altura da imagem como parâmetro
     $img = new DrawSideViews(1000, 1300, 'FAFAFA');
 
     /**
@@ -23,28 +23,27 @@ ds
      *  m_final          : Metragem final do atributo atual em metros
      *  slot             : Ranhura do filtro em mm. Usado somente para os filtros
      *  diameter         : Diâmetro. Valor do diâmetro do poço de acordo com a profundidade, em polegadas.
-     * 
      */
 
     $sideviews = [
-        //Revestimento
+        // Revestimento
         // Campos obrigatórios: id, type, material_name, background_color, m_initial, m_final
         [ 'id' => 1, 'type' => 'coating', 'image' => '../public/tiles/cimento.png', 'material_name' => 'Tubo PVC', 'background_color' => '#666666', 'm_initial' => '0', 'm_final' => '3' ],
-        [ 'id' => 2, 'type' => 'coating', 'image' => '../public/tiles/cimento.png', 'material_name' => 'Cimento', 'background_color' => '#DDDDDD', 'm_initial' => '4', 'm_final' => '7' ],
+        [ 'id' => 2, 'type' => 'coating', 'image' => '../public/tiles/cimento.png', 'material_name' => 'Cimento',  'background_color' => '#DDDDDD', 'm_initial' => '4', 'm_final' => '7' ],
         [ 'id' => 3, 'type' => 'coating', 'image' => '../public/tiles/cimento.png', 'material_name' => 'Tubo PVC', 'background_color' => '#666666', 'm_initial' => '7', 'm_final' => '9' ],
-        [ 'id' => 4, 'type' => 'coating', 'image' => '../public/tiles/cimento.png', 'material_name' => 'Cimento', 'background_color' => '#DDDDDD', 'm_initial' => '9', 'm_final' => '10' ],
+        [ 'id' => 4, 'type' => 'coating', 'image' => '../public/tiles/cimento.png', 'material_name' => 'Cimento',  'background_color' => '#DDDDDD', 'm_initial' => '9', 'm_final' => '10' ],
         
-        //Filtro
-        //Campos Obrigatórios: id, type, material_name, background_color, m_initial, m_final, slot
-        [ 'id' => 5, 'type' => 'filter', 'image' => '../public/tiles/prefiltro.png', 'material_name' => 'Pré-Filtro', 'background_color' => '#C16D99', 'm_initial' => '0', 'm_final' => '2', 'slot' => '1.2' ],
+        // Filtro
+        // Campos Obrigatórios: id, type, material_name, background_color, m_initial, m_final, slot
+        [ 'id' => 5, 'type' => 'filter', 'image' => '../public/tiles/prefiltro.png', 'material_name' => 'Pré-Filtro',               'background_color' => '#C16D99', 'm_initial' => '0', 'm_final' => '2', 'slot' => '1.2' ],
         [ 'id' => 6, 'type' => 'filter', 'image' => '../public/tiles/prefiltro.png', 'material_name' => 'Filtro de Carvão Ativado', 'background_color' => '#90C16D', 'm_initial' => '6', 'm_final' => '7', 'slot' => '2.6' ],
         
         // Perfil Litológico
         // Campos obrigatórios: id, type, material_name, background_color, m_initial, m_final
-        [ 'id' => 7, 'type' => 'lythologic', 'image' => '../public/tiles/areia.png', 'material_name' => 'Cascalho', 'background_color' => '#e5c03b', 'm_initial' => '0', 'm_final' => '3'],
-        [ 'id' => 8, 'type' => 'lythologic', 'image' => '../public/tiles/gravel.png', 'material_name' => 'Arenito', 'background_color' => '#AAAAAA', 'm_initial' => '3', 'm_final' => '5'],
-        [ 'id' => 9, 'type' => 'lythologic', 'image' => '../public/tiles/solomarciano.png', 'material_name' => 'Argila', 'background_color' => '#a3904e', 'm_initial' => '5', 'm_final' => '7'],
-        [ 'id' => 10, 'type' => 'lythologic', 'image' => '../public/tiles/psychedelic.png', 'material_name' => 'Calcário', 'background_color' => '#ff0000', 'm_initial' => '7', 'm_final' => '10'],
+        [ 'id' => 7,  'type' => 'lythologic', 'image' => '../public/tiles/areia.png',        'material_name' => 'Cascalho', 'background_color' => '#e5c03b', 'm_initial' => '0', 'm_final' => '3'],
+        [ 'id' => 8,  'type' => 'lythologic', 'image' => '../public/tiles/gravel.png',       'material_name' => 'Arenito',  'background_color' => '#AAAAAA', 'm_initial' => '3', 'm_final' => '5'],
+        [ 'id' => 9,  'type' => 'lythologic', 'image' => '../public/tiles/solomarciano.png', 'material_name' => 'Argila',   'background_color' => '#a3904e', 'm_initial' => '5', 'm_final' => '7'],
+        [ 'id' => 10, 'type' => 'lythologic', 'image' => '../public/tiles/psychedelic.png',  'material_name' => 'Calcário', 'background_color' => '#ff0000', 'm_initial' => '7', 'm_final' => '10'],
 
         // Diâmetro    
         // Campos obrigatórios: id ,type, m_initial, m_final, diameter    
@@ -61,25 +60,24 @@ ds
 
     $img->columnSpacement = 1;
 
-    //Encerre, caso não venha nada via POST
-    // if( empty($_POST['field']) ){
-    //     return;
-    // }
-
     // Define o valor cadastrado para a profundidade do poço em metro
-    // Esse valor virá do banco de dados. Ele não é calculado automaticamente para 
-    // que a informação p
+    // Ele é calculado automaticamente caso tenha sido definido com 
+    // setDepth(). 
     // $img->setDepth( 20 );
 
-
-    //Envia os dados dos perfis
-    // $img->setData($_POST['field']);
+    // Define os dados dos perfis
     $img->setData($sideviews);
 
-    //Recebe a imagem
+    // Recebe a imagem
     $img->show();
 
-    //Elimina as variáveis
+    // Faz o download da imagem
+    // $img->asGif()->download();  // Faz download como Gif
+    // $img->asJpg()->download();  // Faz download como Jpg
+    // $img->asPng()->download();  // Faz donwload como Png
+    // $img->download();           // Faz download como Png
+
+    // Elimina as variáveis
     $img = null;
 ?>
     
