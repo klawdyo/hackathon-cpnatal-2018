@@ -77,8 +77,6 @@ class Draw{
      */
     protected $errors = [];
 
-
-
     /*
      * Construtor
      *
@@ -90,8 +88,6 @@ class Draw{
         //Cria a imagem
         $this->create();
     }
-
-
 
     /*
      * cria um quadrado
@@ -107,7 +103,6 @@ class Draw{
         return $this;
     }
 
-
     /*
      * Escreve um texto
      *
@@ -120,10 +115,6 @@ class Draw{
      * @param $font Fonte padrão relativo a /public/fonts
      */
     public function text($text, $x, $y, $hex = '000000', $size = 12, $angle = 0, $font = null){
-        //Força a validação da cor
-        //$hex = $this->isValidHex($hex);
-        //$this->allocateColor($hex);
-
         $base = '../public/fonts/';
 
         if(empty($font)){$font = $this->font;}
@@ -135,30 +126,28 @@ class Draw{
     }
 
     /*
-     * Desenha uma linha
+     * Desenha uma linha.
+     * O PHP traça uma linha recebendo as suas coordenadas inicial e final. 
      * 
      * 
-     * @param $x
-     * @param $y
-     * @param $size
-     * @param $angle
-     * @param $color
-     * @param $dashed
-     * @param $colorSpacement
-     * @param $noColorSpacement
+     * @param $x Posição x do início da linha
+     * @param $y Posição y do início da linha
+     * @param $size Tamanho da linha em pixels
+     * @param $angle Ângulo de inclinação da linha
+     * @param $color Cor em hexadecimal
+     * @param $dashed Define se é uma linha pontilhada
+     * @param $colorSpacement Tamanho em pixels da cor do pontilhado
+     * @param $noColorSpacement Tamanho em pixels do espaçamento do pontilhado
      * 
-     * @return object Retorna o proprio objeto para permitir o encadeamento de métodos  
+     * @return object Retorna o próprio objeto para permitir o encadeamento de métodos  
      */
     public function line($x, $y, $size, $angle = 0, $color = '000000', $dashed = false, $colorSpacement = 2, $noColorSpacement = 2){
 
         //ângulo e tamanho
         $angle = 360 - $angle;
-        //$angle -= 180;
-        
         
         $cos = round(cos(deg2rad($angle)), 2);
         $sin = round(sin(deg2rad($angle)), 2);
-        
         
         //X2. São as coordenadas finais da linha. Tem que ser calculada baseando-se no ponto inicial,
         $x2 = ($cos * $size ) + $x;
@@ -168,9 +157,6 @@ class Draw{
         $color = $this->getColor($color);
         
         if($dashed){
-            // $colorLength = 2;   // Tamanho da repetição de pixels da cor
-            // $spaceLength = 2;   // Tamanho da repetição de pixels transparentes
-
             // Cria um array no estilo [ red, red, transparent, transparent ] de acordo com as configurações
             // em $colorLength e $spaceLength e passa como estilo para a linha gerada
             $style =  array_merge( array_fill(0, $colorSpacement, $color ), array_fill( 0, $noColorSpacement, IMG_COLOR_TRANSPARENT ) );
@@ -183,8 +169,6 @@ class Draw{
         else{
             imageline($this->img, $x, $y, $x2, $y2, $color);
         }
-
-            
 
         return $this;
     }
@@ -204,10 +188,6 @@ class Draw{
      * 
      */
     public function circle($x, $y, $w, $color, $filled = true){
-        // $func = ($filled) ? 'imagefilledellipse' : 'imageellipse';
-
-        // $func($this->img, $x + ($w/2), $y + ($w/2), $w, $w, $this->getColor($color));
-
         return $this->ellipse( $x, $y, $w, $w, $color, $filled );
     }
 
@@ -270,10 +250,10 @@ class Draw{
         return $this;
     }
 
-    /**
+    /** TO DO
      * Desenha uma forma livre
      */
-    public function freeForm( $points, $color, $filled = true ){
+    /*public function freeForm( $points, $color, $filled = true ){
         try{
 
         }
@@ -282,7 +262,7 @@ class Draw{
         }
 
         return $this;
-    }
+    }//*/
 
     /**
      * Desenha um arco. O arco é desenhado em sentido horário seguindo o contorno de uma elipse
@@ -329,38 +309,21 @@ class Draw{
     }
 
     /**
-     * Cria uma imagem colorida de dimensões específicas e aplica uma segunda imagem como 
-     * ladrilho para elas
-     */
-    public function tiles(  $w, $h, $path, $backgroundColor ){
-        // Imagem vazia com uma cor de fundo
-        $im = ( new Draw( $w, $h, $backgroundColor ) )->img;
-        // Imagem de ladrilho
-        $stamp = $this->createFromXxx( $path );
-        // Dimensões do ladrilho
-        $tileWidth  = imagesx($stamp);
-        $tileHeight = imagesy($stamp);
-        // Linhas e Colunas a serem repetidas
-        $cols = $w > $tileWidth  ? ceil( $w / $tileWidth  ) : 1;
-        $rows = $h > $tileHeight ? ceil( $h / $tileHeight ) : 1;
-        // Loop pelas linhas e colunas
-        for( $i = 0; $i < $cols; $i++ ){
-            for( $j = 0;$j < $rows; $j++ ){
-                $this->imageMerge( $im, $stamp, $i * $tileWidth, $j * $tileHeight, 0,0, imagesx($stamp), imagesy($stamp), 100 );
-            }
-        }
-        
-        return $im;
-    }    
-
-    /**
      * Cria um retângulo com uma cor de fundo e uma imagem que se repete, como textura, ladrilho, telha, etc
      * Se a imagem for transparente, a cor de fundo ficará misturada com ela e dará a impressão de textura
      * 
+     * @param $x Posição x do retângulo gerado na imagem base
+     * @param $y Posição y do retângulo gerado na imagem base
+     * @param $w Largura do retângulo
+     * @param $h Altura do retângulo
+     * @param $path Caminho da imagem da textura
+     * @param $bgColor Cor de fundo em hexadecimal
      */
     public function addTexture( $x, $y, $w, $h, $path, $bgColor = '#FFFFFF' ){
-        //imagem
+        // Imagem
         $texture = $this->tiles( $w, $h, $path, $bgColor );
+        
+        // Mescla a imagem texturada com a imagem base
         $this->imageMerge( $this->img, $texture, $x, $y, 0,0,imagesx( $texture ), imagesy($texture), 100 );
 
         return $this;
@@ -373,7 +336,6 @@ class Draw{
     ##  Ex.: rotate(), dashed(), alpha(), dimensions(), position()
     ##  $img->rotate(45)->alpha(50)->position(0,0)->dimensions(10, 50)->rectangle() //Cria um retângulo 
     ##  rotacionado e com  transparência de 50% com o tamanho e as coordenadas especificadas
-    ##
     ##
     ##########################################################################################
     
@@ -430,6 +392,7 @@ class Draw{
     ##########################################################################################
     ##
     ##  MÉTODOS DE RETORNO
+    ##  Usados no retorno da imagem ao usuário, tipo exibição, download ou salvo em um diretório
     ##
     ##########################################################################################
 
@@ -455,7 +418,7 @@ class Draw{
             break;
         }
 
-        //Tratamento de erros
+        // Tratamento de erros
         $this->getErrors();
         
         // Envia o cabeçalho do tipo da imagem
@@ -493,15 +456,14 @@ class Draw{
     /*
      * Define se a imagem deve ser retornada como png
      */
-    public function asPng(){
+    public function asPng() {
         $this->fileType = 'PNG';
         
         return $this;
     }
 
-
     /*
-     * Define se a imagem deve ser retornada como png
+     * Define se a imagem deve ser retornada como jpg
      */
     public function asJpg(){
         $this->fileType = 'JPG';
@@ -509,17 +471,14 @@ class Draw{
         return $this;
     }
 
-
     /*
-     * Define se a imagem deve ser retornada como png
+     * Define se a imagem deve ser retornada como gif
      */
     public function asGif(){
         $this->fileType = 'GIF';
         
         return $this;
     }
-
-
 
     ##########################################################################################
     ##
@@ -530,22 +489,24 @@ class Draw{
 
     /*
      * Cria o objeto da imagem com as configurações iniciais
-     *
      */
     protected function create(){
-        //Crio a imagem inicial
+        // Crio a imagem inicial
         $this->img = imagecreatetruecolor($this->width, $this->height);
-        //Crio uma imagem preenchida
+        
+        // Crio uma imagem preenchida
         imagefill($this->img, 0, 0, $this->getColor( $this->backgroundColor ));
+        
         // Defino o antialiasing como true
         imageantialias($this->img, true);
+        
         // Defino o suporte a transparência como true
         imageAlphaBlending($this->img, true);
         imageSaveAlpha($this->img, true);
     }
 
     /**
-     * 
+     * Destrói a imagem
      */
     protected function destroy(){
         imagedestroy($this->img);
@@ -559,7 +520,10 @@ class Draw{
      * @return resource da imagem
      */
     protected function createFromXxx( $path ) {
+        // Pega a extensão do arquivo passado
         $extension = Filesystem::extension($path);
+        
+        // Seleciona a função correta de imagem.
         switch( $extension ){
             case 'png'  : return imagecreatefrompng ( $path ); break;
             case 'jpeg' : return imagecreatefromjpeg( $path ); break;
@@ -569,6 +533,9 @@ class Draw{
 
     /*
      * Pega uma cor alocada
+     * 
+     * @param $hex Cor em hexadecimal
+     * @return Objeto no padrão usado pelo PHP-GD
      */
     private function getColor($hex){
         $hex = $this->isValidHex($hex);
@@ -579,7 +546,8 @@ class Draw{
 
     /*
      * Aloca um cor
-     *
+     * 
+     * @param $hex Cor em hexadecimal
      */
     private function allocateColor($hex){
         $hex   = $this->isValidHex($hex);
@@ -587,6 +555,42 @@ class Draw{
         $this->allocatedColors[$hex] = imagecolorallocate($this->img, $color->red, $color->green, $color->blue);
     }
 
+    /**
+     * Cria uma imagem colorida de dimensões específicas e aplica uma segunda imagem como 
+     * ladrilho para elas. A imagem não é adicionada à imagem original, é apenas uma imagem
+     * separada para ser usada em outras formas.
+     * 
+     * @param $w Tamanho da imagem
+     * @param $h Altura da imagem
+     * @param $path Caminho da imagem usada como padrão
+     * @param $backgroundColor Cor de fundo em hexadecimal
+     */
+    protected function tiles(  $w, $h, $path, $backgroundColor ){
+        // Imagem vazia com uma cor de fundo
+        $im = ( new Draw( $w, $h, $backgroundColor ) )->img;
+        
+        // Imagem de ladrilho
+        $stamp = $this->createFromXxx( $path );
+        
+        // Dimensões do ladrilho
+        $tileWidth  = imagesx($stamp);
+        $tileHeight = imagesy($stamp);
+        
+        // Linhas e Colunas a serem repetidas
+        $cols = $w > $tileWidth  ? ceil( $w / $tileWidth  ) : 1;
+        $rows = $h > $tileHeight ? ceil( $h / $tileHeight ) : 1;
+        
+        // Loop pelas linhas e colunas
+        for( $i = 0; $i < $cols; $i++ ){
+            for( $j = 0;$j < $rows; $j++ ){
+                $this->imageMerge( $im, $stamp, $i * $tileWidth, $j * $tileHeight, 0,0, imagesx($stamp), imagesy($stamp), 100 );
+            }
+        }
+        
+        return $im;
+    }    
+    
+    
     /**
      * Adaptação do imagecopymerge() com suporte a imagens transparentes
      */
@@ -612,16 +616,16 @@ class Draw{
      * @return object ->red, ->green e ->blue
      */
     private function toRGB($hex){
-
+        // Normaliza a cor hexadecimal
         $hex = $this->isValidHex($hex);
-
+        
+        // Gera a classe padrão
         $obj = new stdClass();
 
-        //Pega de 2 em 2 caracteres e transforma para decimal
-        $obj->red   = str_pad(hexdec(substr($hex, 0, 2)), 2, '0');
-        $obj->green = str_pad(hexdec(substr($hex, 2, 2)), 2, '0');
-        $obj->blue  = str_pad(hexdec(substr($hex, 4, 2)), 2, '0');
-
+        // Pega de 2 em 2 caracteres e transforma para decimal
+        $obj->red   = str_pad( hexdec( substr( $hex, 0, 2 ) ), 2, '0' );
+        $obj->green = str_pad( hexdec( substr( $hex, 2, 2 ) ), 2, '0' );
+        $obj->blue  = str_pad( hexdec( substr( $hex, 4, 2 ) ), 2, '0' );
 
         return $obj;
     }
@@ -629,20 +633,23 @@ class Draw{
     /*
      * Verifica se um hex é válido e normaliza
      *
+     * @param $hex Cor em hexadecimal
+     * @return string Cor normalizada em hexadecimal
      */
     private function isValidHex($hex){
         try{
-            //Se começa com '#', retire
+            // Se começa com '#', retire
             if($hex[0] == '#'){
                 $hex = substr($hex, 1);
             }
 
             // Se tem 3 letras, repita-as no formato AABBCC
             if( strlen( $hex ) === 3 ) $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2]; 
-            //se tem 6 letras, continue;
+            
+            // Se tem 6 letras, continue;
             if(strlen($hex) != 6){ $this->setError('Cor "' . $hex . '" informada com '. strlen($hex) .' letras'); }
 
-            //Se só tem caracteres hexadecimais
+            // Se só tem caracteres hexadecimais
             if(preg_match('/^[0-9a-fA-F]{6}$/', $hex) == false){
                 $this->setError('Caracteres não hexadecimais encontrados na cor "' . $hex . '"');
             }
@@ -662,14 +669,19 @@ class Draw{
     ##########################################################################################
     
     /*
+     * Verifica se existem erros na geração da imagem
      *
+     * @return bool
      */
     public function hasErrors(){
         return !empty($this->errors);
     }
 
-    /*
-     * public function
+    /* 
+     * Incluir um erro na propriedade de erros
+     * 
+     * @param $text Mensagem de erro
+     * @return string Retorna o $erro inserido
      */
     public function setError($text){
         $this->errors[] = $text;
@@ -677,21 +689,21 @@ class Draw{
     }
 
     /*
-     *
+     * Pega os erros adicionados e os insere dentro de um retângulo vermelho na imagem gerada
+     * 
+     * @todo Deixar o retângulo semi transparente
      */
     public function getErrors(){
         $x = 10;
         $y = 10;
         $lineHeight = 15;
-        //$this->text( 'teste', 0, 0, '000000', 10 );
         
         if($this->hasErrors()){
             array_unshift( $this->errors, 'Atenção! Ocorreram os seguintes erros:' );
-            //Pega o número de erros e aplica em um quadrado vermelho sobre todos os outros
+            
+            // Pega o número de erros e aplica em um quadrado vermelho sobre todos os outros
             $this->rectangle( 0, 0, $this->width, count( $this->errors ) * $lineHeight+20, '#000' );
-            // $this->rectangle(0,0,$this->width, $lineHeight, '#000000', false);
-            //$this->text('Os seguintes erros aconteceram:', $x, $y, '000000', 10);
-            //$x += 20;
+           
             $y += $lineHeight;
 
             foreach($this->errors as $text){
@@ -701,14 +713,14 @@ class Draw{
         }
     }
 
-    /**
+    /** TO DO
      * Verifica se faltam parâmetros obrigatórios em cada tipo de forma
      * formato:
      *  $fields = [
      *      'x' => 'rules' => [ 'required', 'integer' ], 'value' => 34
      * ];
      */
-    protected function validate( $fields = [] ){
+    /*protected function validate( $fields = [] ){
         $errors = [];
         if( is_array( $fields ) && !empty( $fields ) ){
 
@@ -725,16 +737,16 @@ class Draw{
         else{
             $this->setError( '$fields está vazio ou não é um array' );
         }
-    }
+    }//*/
 
-    /*
+    /* TO DO
      * Pega os dados do campo atual 
      */
-    protected function current(){
+    /*protected function current(){
         if( $this->current === null ) 
             return $this->current = count($this->forms);
         return $this->current;
-    }
+    }//*/
     
 
 }
